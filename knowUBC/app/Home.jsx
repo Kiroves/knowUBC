@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -8,16 +8,17 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-export default function Home(setComp) {
+export default function Home({ setComp }) {
+  const [news, setNews] = useState({});
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
 
       <View style={styles.header}>
         <Text style={styles.title}>knowUBC</Text>
-          <TouchableOpacity>
-            <Ionicons name="notifications-outline" size={24} color="black" />
-          </TouchableOpacity>
+        <TouchableOpacity onPress={() => setComp("Notifications")}>
+          <Ionicons name="notifications-outline" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.buttonRow}>
@@ -42,13 +43,10 @@ export default function Home(setComp) {
       </View>
 
       <View style={styles.navbar}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setComp("Home")}>
           <Ionicons name="home-outline" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="person-outline" size={24} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setComp("Notifications")}>
           <Ionicons name="notifications-outline" size={24} color="black" />
         </TouchableOpacity>
       </View>
