@@ -6,8 +6,12 @@ from io import BytesIO
 import feedparser
 from random import randint
 from dotenv import load_dotenv
+from aws_lambda_powertools import Logger
 
-load_dotenv(".env")
+load_dotenv()
+
+logger = Logger()   
+
 
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
@@ -18,7 +22,6 @@ bedrock_runtime = boto3.client(
 )
      
 def lambda_handler(event, context):
-    json_region = os.environ['AWS_DEFAULT_REGION']
     query_params = event.get("queryStringParameters", {})
     category = query_params.get("category", "")
     if not category:
@@ -74,6 +77,7 @@ def lambda_handler(event, context):
             'body': json.dumps('Internal server error')
         }
 
+
 def invoke_bedrock_summary(content):
     # Define the prompt with the content
     prompt = f"""
@@ -120,3 +124,31 @@ def invoke(prompt, temperature, max_tokens):
     except Exception as e:
         logger.error(f"Error invoking the Bedrock model: {e}")
         return "Error generating summary"
+    
+def demotry():
+# Fetch and parse the RSS feed related to the category
+# https://example.com/rss?category={category}
+    rss_url = f"https://news.ubc.ca/rss?category=Science&Technology"  
+    feed = feedparser.parse(rss_url)
+    
+    summaries = []
+    
+    for entry in feed.entries:
+        title = entry.title
+        content = entry.summary  # or entry.content if you need the full content
+        
+        # Summarize the article using Bedrock
+        summary = invoke_bedrock_summary(content)
+        summaries.append({"title": title, "summary": summary})
+
+    return {
+            'statusCode': 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Headers": "*",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "*",
+            },
+            'body': json.dumps(summaries)
+        }
+demotry()
