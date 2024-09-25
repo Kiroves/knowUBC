@@ -15,10 +15,7 @@ logger = Logger()
 
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
-    region_name=os.environ.get('AWS_DEFAULT_REGION'),
-    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
-    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
-    aws_session_token=os.environ.get('AWS_SESSION_TOKEN')
+    region_name="us-west-2",
 )
      
 def lambda_handler(event, context):
