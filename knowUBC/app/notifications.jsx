@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const Notifications = () => {
+const Notifications = (setComp) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Notifications</Text>
