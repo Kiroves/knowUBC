@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
@@ -10,6 +10,24 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 export default function Home({ setComp }) {
   const [news, setNews] = useState({});
+  const [category, setCategory] = useState("science");
+
+  // Fetch news data with a category query parameter and JSON content-type header
+  useEffect(() => {
+    fetch(`https://xkktkpkff8.execute-api.us-west-2.amazonaws.com/prod/news?category=${category}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => setNews(data))
+      .catch((error) => console.error("Error fetching news:", error));
+  }, [category]);
+
+  const handleCategoryPress = (selectedCategory) => {
+    setCategory(selectedCategory);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
@@ -22,14 +40,52 @@ export default function Home({ setComp }) {
       </View>
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Science</Text>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            category === "science" && styles.activeButton, // Highlight active button
+          ]}
+          onPress={() => handleCategoryPress("science")}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              category === "science" && styles.activeButtonText,
+            ]}
+          >
+            Science
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Climate</Text>
+
+        <TouchableOpacity
+          style={[styles.button, category === "climate" && styles.activeButton]}
+          onPress={() => handleCategoryPress("climate")}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              category === "climate" && styles.activeButtonText,
+            ]}
+          >
+            Climate
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>University</Text>
+
+        <TouchableOpacity
+          style={[
+            styles.button,
+            category === "university" && styles.activeButton,
+          ]}
+          onPress={() => handleCategoryPress("university")}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              category === "university" && styles.activeButtonText,
+            ]}
+          >
+            University
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -59,6 +115,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#97D4E9",
     paddingTop: 40,
+  },
+  activeButton: {
+    backgroundColor: "#007BFF",
+    color: "white",
+  },
+  activeButtonText: {
+    color: "#fff", // Active button text color (white)
   },
   header: {
     flexDirection: "row",

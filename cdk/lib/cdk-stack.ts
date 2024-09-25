@@ -139,6 +139,22 @@ export class CdkStack extends cdk.Stack {
       sourceArn: `arn:aws:execute-api:${this.region}:${this.account}:${this.api.restApiId}/*/*`,
     });
 
+    const bedrockPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ["bedrock:InvokeModel", "bedrock:InvokeEndpoint"],
+      resources: [
+        "arn:aws:bedrock:" +
+          this.region +
+          "::foundation-model/meta.llama3-70b-instruct-v1:0",
+        "arn:aws:bedrock:" +
+          this.region +
+          "::foundation-model/amazon.titan-embed-text-v2:0",
+      ],
+    });
+
+    // Attach the custom Bedrock policy to Lambda function
+    bedrockFunc.addToRolePolicy(bedrockPolicyStatement);
+
 
   }
 }
