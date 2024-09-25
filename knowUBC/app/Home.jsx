@@ -8,25 +8,9 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+
 export default function Home({ setComp }) {
-  const [news, setNews] = useState({});
-  const [category, setCategory] = useState("science");
-
-  // Fetch news data with a category query parameter and JSON content-type header
-  useEffect(() => {
-    fetch(`https://xkktkpkff8.execute-api.us-west-2.amazonaws.com/prod/news?category=${category}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => setNews(data))
-      .catch((error) => console.error("Error fetching news:", error));
-  }, [category]);
-
-  const handleCategoryPress = (selectedCategory) => {
-    setCategory(selectedCategory);
-  };
+  const [activeTab, setActiveTab] = useState("Science"); 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,53 +24,15 @@ export default function Home({ setComp }) {
       </View>
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            category === "science" && styles.activeButton, // Highlight active button
-          ]}
-          onPress={() => handleCategoryPress("science")}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              category === "science" && styles.activeButtonText,
-            ]}
+        {["Science", "Climate", "University"].map((tab) => (
+          <TouchableOpacity
+            key={tab}
+            style={[styles.button, activeTab === tab && styles.activeButton]} 
+            onPress={() => setActiveTab(tab)} 
           >
-            Science
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, category === "climate" && styles.activeButton]}
-          onPress={() => handleCategoryPress("climate")}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              category === "climate" && styles.activeButtonText,
-            ]}
-          >
-            Climate
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.button,
-            category === "university" && styles.activeButton,
-          ]}
-          onPress={() => handleCategoryPress("university")}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              category === "university" && styles.activeButtonText,
-            ]}
-          >
-            University
-          </Text>
-        </TouchableOpacity>
+            <Text style={styles.buttonText}>{tab}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <View style={styles.content}>
@@ -113,7 +59,7 @@ export default function Home({ setComp }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#97D4E9",
+    backgroundColor: "#40B4E5",
     paddingTop: 40,
   },
   activeButton: {
@@ -142,15 +88,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     paddingHorizontal: 10,
-    marginBottom: 10,
-    maxHeight: 60,
+    marginBottom: 20,
   },
   button: {
-    backgroundColor: "#fff",
-    paddingVertical: 10,
+    backgroundColor: "#E0E7EF", 
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 20,
     marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#E0E7EF',
+  },
+  activeButton: {
+    backgroundColor: "#97D4E9", 
+    borderColor: "#97D4E9", 
   },
   buttonText: {
     color: "#333",
@@ -162,7 +113,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
     color: "#333",
@@ -172,6 +123,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 10,
     marginBottom: 20,
+    elevation: 2, // Added elevation for a subtle shadow effect
   },
   navbar: {
     flexDirection: "row",
@@ -179,7 +131,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    borderTopColor: "#E0E7EF", // Matching the navbar border with the theme
     backgroundColor: "#fff",
   },
 });

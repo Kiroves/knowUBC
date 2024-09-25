@@ -3,15 +3,6 @@ import boto3
 import json
 import base64
 from io import BytesIO
-import feedparser
-from random import randint
-from dotenv import load_dotenv
-from aws_lambda_powertools import Logger
-
-load_dotenv()
-
-logger = Logger()   
-
 
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
@@ -22,7 +13,7 @@ def lambda_handler(event, context):
     query_params = event.get("queryStringParameters", {})
     category = query_params.get("category", "")
     if not category:
-        logger.error("Missing required parameter: category")
+        print("Missing required parameter: category")
         return {
             'statusCode': 400,
             "headers": {
@@ -34,65 +25,18 @@ def lambda_handler(event, context):
             'body': json.dumps('Missing required parameter: category')
         }
 
-    try:
-         # Fetch and parse the RSS feed related to the category
-         #https://example.com/rss?category={category}
-        rss_url = f"https://news.ubc.ca/rss?category=Science&Technology"  
-        feed = feedparser.parse(rss_url)
+        # Fetch and parse the RSS feed related to the category
+        #https://example.com/rss?category={category}
         
-        summaries = []
+        # Summarize the article using Bedrock
+    summary = invoke_bedrock_summary("The octopus is a fascinating marine creature known for its intelligence, adaptability, and unique physical characteristics. Belonging to the class Cephalopoda, octopuses are mollusks that can be found in oceans around the world, from shallow coastal waters to the deep sea. One of their most notable features is their eight arms, which are lined with sensitive suckers that can taste and feel their environment. These arms not only aid in locomotion but also assist in hunting and capturing prey, such as crabs, fish, and mollusks. Octopuses are renowned for their remarkable ability to change color and texture, a skill that serves various purposes, including camouflage to evade predators and communication with other octopuses. Their complex nervous system, with a significant portion of their neurons located in their arms, allows for intricate movement and problem-solving abilities, making them one of the most intelligent invertebrates. In addition to their unique biology, octopuses possess three hearts: two pump blood to the gills for oxygenation, while the third circulates it to the rest of the body. Interestingly, their blood is blue due to the presence of hemocyanin, which is more efficient at transporting oxygen in cold, low-oxygen environments.")
+    return (summary)
         
-        for entry in feed.entries:
-            title = entry.title
-            content = entry.summary  # or entry.content if you need the full content
-            
-            # Summarize the article using Bedrock
-            summary = invoke_bedrock_summary(content)
-            summaries.append({"title": title, "summary": summary})
-
-        # Return the summarized data
-        return {
-            'statusCode': 200,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-            },
-            'body': json.dumps(summaries)
-        }
-    except Exception as e:
-        logger.exception(f"Error processing the feed: {e}")
-        return {
-            'statusCode': 500,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-            },
-            'body': json.dumps('Internal server error')
-        }
-
+       
 
 def invoke_bedrock_summary(content):
     # Define the prompt with the content
-    prompt = f"""
-    I need to summarize the content of the news article. The content of the article is between the <data> XML-like tags.
-
-    <data>
-    {content}
-    </data>
-
-    The summary must be concise and focus on the key points of the article. The output must be provided in the following JSON format:
-
-    Example output:
-    {{
-        "summary": "<summarised_content>"
-    }}
-
-    Write the JSON output and nothing more.
-    """
+    prompt =  "I need to summarize the content of the news article. The content of the article is" + content + "The summary must be concise and focus on the key points of the article. The output must be a string"
 
     # Call the Bedrock model to generate the summary
     summary = invoke(prompt, temperature=0.7, max_tokens=150)
@@ -104,39 +48,15 @@ def invoke(prompt, temperature, max_tokens):
     # Configuration for the Bedrock model invocation
     prompt_config = {
         "prompt": f'\n\nHuman: {prompt} \n\nAssistant:',
-        "max_tokens_to_sample": max_tokens,
         "temperature": temperature
     }
 
-    try:
-        # Invoke the model using Bedrock runtime
-        response = bedrock_runtime.invoke_model(
-            body=json.dumps(prompt_config),
-            modelId="us.meta.llama3-2-3b-instruct-v1:0"
-        )
-
-        response_body = json.loads(response['body'].read())
-        return response_body.get("completion")
-
-    except Exception as e:
-        logger.error(f"Error invoking the Bedrock model: {e}")
-        return "Error generating summary"
-    
-def demotry():
-# Fetch and parse the RSS feed related to the category
-# https://example.com/rss?category={category}
-    rss_url = f"https://news.ubc.ca/rss?category=Science&Technology"  
-    feed = feedparser.parse(rss_url)
-    
-    summaries = []
-    
-    for entry in feed.entries:
-        title = entry.title
-        content = entry.summary  # or entry.content if you need the full content
+    response = bedrock_runtime.invoke_model(
+        body=json.dumps(prompt_config),
+        modelId="meta.llama3-70b-instruct-v1:0")
         
-        # Summarize the article using Bedrock
-        summary = invoke_bedrock_summary(content)
-        summaries.append({"title": title, "summary": summary})
+
+    response_body = json.loads(response['body'].read())
 
     return {
             'statusCode': 200,
@@ -146,6 +66,5 @@ def demotry():
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "*",
             },
-            'body': json.dumps(summaries)
+            'body': json.dumps(response_body)
         }
-demotry()
