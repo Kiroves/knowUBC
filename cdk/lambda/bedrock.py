@@ -3,39 +3,77 @@ import boto3
 import json
 import base64
 from io import BytesIO
+from feedparser import parse
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 bedrock_runtime = boto3.client(
     service_name="bedrock-runtime",
     region_name="us-west-2",
-)
-     
-def lambda_handler(event, context):
-    query_params = event.get("queryStringParameters", {})
-    category = query_params.get("category", "")
-    if not category:
-        print("Missing required parameter: category")
-        return {
-            'statusCode': 400,
-            "headers": {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Headers": "*",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-            },
-            'body': json.dumps('Missing required parameter: category')
-        }
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    aws_session_token=os.getenv('AWS_SESSION_TOKEN')
+    )
 
-        # Fetch and parse the RSS feed related to the category
-        #https://example.com/rss?category={category}
+def remove_html_tags(text):
+    soup = BeautifulSoup(text, "html.parser")
+    return soup.get_text()
+
+def parse_feed():
+    rss_url = "https://news.ubc.ca/category/science-technology/feed/"
+    feed = parse(rss_url)
+    a =[]
+    for entry in feed.entries:
+        title = entry.title
+        content = entry.content[0].get("value")  # or entry.content if you need the full content
+        a.append(remove_html_tags("" + content))
+    for i in a:
+        print("@")
+        print("@")
+        print("@")
+        invoke_bedrock_summary(""+i)
         
-        # Summarize the article using Bedrock
-    summary = invoke_bedrock_summary("The octopus is a fascinating marine creature known for its intelligence, adaptability, and unique physical characteristics. Belonging to the class Cephalopoda, octopuses are mollusks that can be found in oceans around the world, from shallow coastal waters to the deep sea. One of their most notable features is their eight arms, which are lined with sensitive suckers that can taste and feel their environment. These arms not only aid in locomotion but also assist in hunting and capturing prey, such as crabs, fish, and mollusks. Octopuses are renowned for their remarkable ability to change color and texture, a skill that serves various purposes, including camouflage to evade predators and communication with other octopuses. Their complex nervous system, with a significant portion of their neurons located in their arms, allows for intricate movement and problem-solving abilities, making them one of the most intelligent invertebrates. In addition to their unique biology, octopuses possess three hearts: two pump blood to the gills for oxygenation, while the third circulates it to the rest of the body. Interestingly, their blood is blue due to the presence of hemocyanin, which is more efficient at transporting oxygen in cold, low-oxygen environments.")
-    return (summary)
+
+# for i in info:
+#     summary = invoke_bedrock_summary(i["summary"])
+#     dic = {"title":i["title"]}
+#     dic["summary"] = summary
+#     output.append(dic)
+        
+     
+# def lambda_handler(event, context):
+#     query_params = event.get("queryStringParameters", {}) # event is a dictionary containing info about HTTP request
+#     category = query_params.get("category", "") 
+#     if not category:
+#         print("Missing required parameter: category")
+#         return {
+#             'statusCode': 400,
+#             "headers": {
+#                 "Content-Type": "application/json",
+#                 "Access-Control-Allow-Headers": "*",
+#                 "Access-Control-Allow-Origin": "*",
+#                 "Access-Control-Allow-Methods": "*",
+#             },
+#             'body': json.dumps('Missing required parameter: category')
+#         }
+
+#         # Fetch and parse the RSS feed related to the category
+#         #https://example.com/rss?category={category}
+        
+#         # Summarize the article using Bedrock
+#     output = []  
+#     for i in info:
+#         summary = invoke_bedrock_summary(i["summary"])
+#         dic = {"title":i["title"]}
+#         dic["summary"] = summary
+#         output.append(dic)
         
        
 
 def invoke_bedrock_summary(content):
-    # Define the prompt with the content
     prompt =  "I need to summarize the content of the news article. The content of the article is" + content + "The summary must be concise and focus on the key points of the article. The output must be a string"
 
     # Call the Bedrock model to generate the summary
@@ -57,6 +95,7 @@ def invoke(prompt, temperature, max_tokens):
         
 
     response_body = json.loads(response['body'].read())
+    print(response_body)
 
     return {
             'statusCode': 200,
@@ -67,4 +106,12 @@ def invoke(prompt, temperature, max_tokens):
                 "Access-Control-Allow-Methods": "*",
             },
             'body': json.dumps(response_body)
-        }
+    }
+
+parse_feed()
+     
+
+    
+        
+       
+
