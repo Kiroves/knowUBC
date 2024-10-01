@@ -15,8 +15,54 @@ This project was developed during the Internal CIC Hackathon. knowUBC is a mobil
 
 The following architecture diagram illustrates the various AWS components utliized to deliver the solution. For an in-depth explanation of the frontend and backend stacks, refer to the [Architecture Deep Dive](docs/architecture_diagram_knowUBC.png).
 
-![Alt text](./docs/architecture/architecture_diagram_knowUBC.png)
+![Alt text](./docs/architecture_diagram_knowUBC.png)
 
 # Deployment Guide
 
 To deploy this solution, please follow the steps laid out in the [Deployment Guide](docs/DeploymentGuide.md)
+
+# User Guide
+
+For instructions on how to navigate the web app interface, refer to the [Web App User Guide](docs/UserGuide.md).
+
+# Directories
+```text
+.                 
+├── docs/
+├── cdk
+│   ├── bin
+│   ├── lambda
+│   ├── lib
+│   ├── test                      
+├── knowUBC/                   
+│   ├── app/                 
+│   ├── assets/                                      
+└── README.md                   
+```
+# Directory Descriptions
+
+- **docs/**: Contains documentation for the application.
+
+- **frontend/**: Contains the user interface of the application.
+  - **app/**: contains the frontend code of the application
+  - **assets/**: Source files for the frontend application.
+
+- **cdk/**: Contains the deployment code for the app's AWS infrastructure
+  - /bin: Contains the instantiation of CDK stack
+  - /lambda: Contains the lambda functions for the project
+  - /lib: Contains the deployment code for all infrastructure stacks
+
+- **README.md**: The main README file for the project.
+
+  
+# Changelog
+N/A
+
+# Credits
+
+This application was architected and developed by Khushi Narang, Sean Woo, and Amy Cao during the UBC Cloud Innovation Centre's internal hackathon.
+
+# License
+
+This project is distributed under the [MIT License](LICENSE).
+
